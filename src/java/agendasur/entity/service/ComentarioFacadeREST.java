@@ -7,10 +7,15 @@ package agendasur.entity.service;
 
 import agendasur.entity.Comentario;
 import agendasur.entity.ComentarioPK;
+import agendasur.entity.Evento;
+import agendasur.entity.Usuario;
+import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import javax.persistence.Query;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -59,10 +64,24 @@ public class ComentarioFacadeREST extends AbstractFacade<Comentario> {
     }
 
     @POST
-    @Override
     @Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-    public void create(Comentario entity) {
-        super.create(entity);
+    public void create(ComentarioProxy comentarioProxy) {
+        
+        Comentario c = conversorComentarioProxyAComentario(comentarioProxy);
+        
+        super.create(c);
+    }
+    
+    private Comentario conversorComentarioProxyAComentario(ComentarioProxy comentarioProxy){
+        Comentario comentario = new Comentario();
+        
+        comentario.setComentarioPK(comentarioProxy.comentarioPK);
+        comentario.setEvento(em.find(Evento.class, comentarioProxy.id));
+        comentario.setUsuario(em.find(Usuario.class, comentarioProxy.emailCreador));
+        comentario.setComentario(comentarioProxy.comentario);
+        comentario.setFecha(comentarioProxy.fecha);
+        
+        return comentario;
     }
 
     @PUT
@@ -88,10 +107,13 @@ public class ComentarioFacadeREST extends AbstractFacade<Comentario> {
     }
 
     @GET
-    @Override
-    @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-    public List<Comentario> findAll() {
-        return super.findAll();
+    @Produces({MediaType.APPLICATION_JSON})
+    public List<ComentarioProxy> obtenerEventos() {
+        List<ComentarioProxy> listComentario = new ArrayList<>();
+        for(Comentario c : super.findAll()){
+            listComentario.add(new ComentarioProxy(c));
+        }
+        return listComentario;
     }
 
     @GET
@@ -107,10 +129,49 @@ public class ComentarioFacadeREST extends AbstractFacade<Comentario> {
     public String countREST() {
         return String.valueOf(super.count());
     }
-
+    
+    @GET
+    @Path("comentario/{id}")
+    @Produces({MediaType.APPLICATION_JSON})
+    public List<ComentarioProxy> getComentarios(@PathParam("id") int id) {
+        Query q;
+        q = this.em.createQuery("select c from Comentario c where c.comentarioPK.eventoId = :id ");
+        q.setParameter("id", id);
+        List<ComentarioProxy> listComentario = new ArrayList<>();
+        for(Comentario c : (List<Comentario>)q.getResultList()){
+            listComentario.add(new ComentarioProxy(c));
+        }
+        
+        return listComentario;
+    }
+    
     @Override
     protected EntityManager getEntityManager() {
         return em;
+    }
+    
+    public static class ComentarioProxy implements Serializable {
+        public ComentarioPK comentarioPK;
+        public String fecha;
+        public String comentario;
+        public int id;
+        public String emailCreador;
+        public String nombreCreador;
+        public String apellidosCreador;
+        
+        public ComentarioProxy(){
+            
+        }
+        
+        public ComentarioProxy(Comentario comentario){
+            this.comentarioPK = comentario.getComentarioPK();
+            this.fecha = comentario.getFecha();
+            this.comentario = comentario.getComentario();
+            this.id = comentario.getEvento().getId();
+            this.emailCreador = comentario.getUsuario().getEmail();   
+            this.nombreCreador = comentario.getUsuario().getNombre();
+            this.apellidosCreador = comentario.getUsuario().getApellidos();
+        }
     }
     
 }

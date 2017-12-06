@@ -66,42 +66,58 @@ public class EventoFacadeREST extends AbstractFacade<Evento> {
 
     @GET
     @Path("{id}")
-    @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-    public Evento find(@PathParam("id") Integer id) {
-        return super.find(id);
+    @Produces({MediaType.APPLICATION_JSON})
+    public EventoProxy find(@PathParam("id") Integer id) {
+        return new EventoProxy(super.find(id));
     }
 
     @GET
     @Path("listar")
-    @Produces({MediaType.APPLICATION_XML,MediaType.APPLICATION_JSON})
+    @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
     public List<EventoProxy> obtenerTodosEventos() {
         List<EventoProxy> retorno = new ArrayList<>();
-        
-        for(Evento evento: super.findAll()){
+
+        for (Evento evento : super.findAll()) {
             retorno.add(new EventoProxy(evento));
         }
-        
+
         return retorno;
     }
-    
+
     @GET
-    @Path("bytag/{tag}")
-    @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-    public List<Evento> findAllEventosByTag(@PathParam("tag") Tag tag) {
+    @Path("eventosNoCaducadosYValidados")
+    @Produces({MediaType.APPLICATION_JSON})
+    public List<EventoProxy> findEventosNoCaducadosYValidados() {
         SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         Date currentDate = new Date();
         Query q;
-        System.out.println(tag.getNombre());
-        System.out.println("*************************************");
         q = this.em.createQuery("select e from Evento e where e.validado = true and e.fechafin >= :currentDate");
         q.setParameter("currentDate", formatter.format(currentDate));
-        System.out.println(q.getResultList().size());
-        Evento e = (Evento)q.getResultList().get(0);
-        System.out.print(e.getTagCollection().size());
-        return q.getResultList();
+
+        List<EventoProxy> listEventos = new ArrayList<>();
+        for (Evento e : (List<Evento>) q.getResultList()) {
+            listEventos.add(new EventoProxy(e));
+        }
+        return listEventos;
     }
-   
-    
+
+    @GET
+    @Path("eventosNoValidados")
+    @Produces({MediaType.APPLICATION_JSON})
+    public List<EventoProxy> findEventosNoValidados() {
+        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        Date currentDate = new Date();
+        Query q;
+        q = this.em.createQuery("select e from Evento e where e.validado = false and e.fechafin >= :currentDate");
+        q.setParameter("currentDate", formatter.format(currentDate));
+
+        List<EventoProxy> listEventos = new ArrayList<>();
+        for (Evento e : (List<Evento>) q.getResultList()) {
+            listEventos.add(new EventoProxy(e));
+        }
+        return listEventos;
+    }
+
     @GET
     @Path("{from}/{to}")
     @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
@@ -116,16 +132,38 @@ public class EventoFacadeREST extends AbstractFacade<Evento> {
         return String.valueOf(super.count());
     }
 
+    @PUT
+    @Path("validar/{id}")
+    @Consumes({MediaType.APPLICATION_JSON})
+    public void validarEvento(@PathParam("id") int id){
+        Evento e = em.find(Evento.class, id);
+        e.setValidado(true);
+        this.edit(e);
+        //this.sendMail(evento);
+    }
+    
+    @GET
+    @Path("{evento}/{usuario}")
+    @Produces(MediaType.TEXT_PLAIN)
+    public boolean existeMegusta(@PathParam("evento") int evento, @PathParam("usuario") String usuario) {
+        Query q;
+        Usuario u = em.find(Usuario.class, usuario);
+        q = this.em.createQuery("select e from Evento e where e.id = :evento and :usuario MEMBER OF e.usuarioCollection");
+        q.setParameter("usuario", u);
+        q.setParameter("evento", evento);
+        return q.getResultList().size()>0;
+    }
+
     @Override
     protected EntityManager getEntityManager() {
         return em;
     }
-    
+
     // Clase statica anidada que representa el proxy para evento
     // Sirve para modelar el json que el servidor manda al cliente
     // y del mismo modo el json que el cliente manda al servidor
-    
-    public static class EventoProxy implements Serializable{
+    public static class EventoProxy implements Serializable {
+
         public Integer id;
         public String nombre, descripcion, fechainicio, fechafin, direccion;
         public boolean validado;
@@ -133,7 +171,7 @@ public class EventoFacadeREST extends AbstractFacade<Evento> {
         public String creador;
         public List<String> meGusta;
         public List<String> tags;
-        
+
         public EventoProxy(Evento evento) {
             this.id = evento.getId();
             this.nombre = evento.getNombre();
@@ -145,18 +183,18 @@ public class EventoFacadeREST extends AbstractFacade<Evento> {
             this.latitud = evento.getLatitud();
             this.longitud = evento.getLongitud();
             this.creador = evento.getCreador().getEmail();
-            
+
             // Completar lista de me gusta con los IDs de los usuarios que le han dado a me gusta
             this.meGusta = evento.getUsuarioCollection().stream().map(e -> e.getEmail()).collect(Collectors.toList());
-            
+
             // Completar lista de me gusta con los tags de un evento
             this.tags = new ArrayList<>();
-            
-            for(Tag tag : evento.getTagCollection()){
+
+            for (Tag tag : evento.getTagCollection()) {
                 this.tags.add(tag.getNombre());
             }
         }
-             
+
     }
-    
+
 }
