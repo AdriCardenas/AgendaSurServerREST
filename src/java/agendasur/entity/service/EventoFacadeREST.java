@@ -44,20 +44,39 @@ public class EventoFacadeREST extends AbstractFacade<Evento> {
     }
 
     @POST
+    @Override
     @Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-    public void createEventoProxy(EventoProxy entity) {
-        //new evento
-        //añadir tag
-        //super.create(entity);
+    public void create(Evento entity) {
+        super.create(entity);
     }
 
     @PUT
     @Path("{id}")
-    @Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+    @Consumes({MediaType.APPLICATION_JSON})
     public void edit(@PathParam("id") Integer id, Evento entity) {
         super.edit(entity);
     }
-
+    
+    @GET
+    @Path("eventosByTag/{nombre}")
+    @Produces({MediaType.APPLICATION_JSON})
+    public List<EventoProxy> findEventosByTag(@PathParam("nombre") String nombre) {
+        Tag t = em.find(Tag.class, nombre);
+        
+        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        Date currentDate = new Date();
+        Query q;
+        q = this.em.createQuery("select e from Evento e where :tag MEMBER OF e.tagCollection and e.validado = true and e.fechafin >= :currentDate");
+        q.setParameter("tag", t);
+        q.setParameter("currentDate", formatter.format(currentDate));
+        
+        List<EventoProxy> listEventos = new ArrayList<>();
+        for (Evento e : (List<Evento>) q.getResultList()) {
+            listEventos.add(new EventoProxy(e));
+        }
+        return listEventos;
+    }
+    
     @DELETE
     @Path("{id}")
     public void remove(@PathParam("id") Integer id) {
@@ -132,7 +151,7 @@ public class EventoFacadeREST extends AbstractFacade<Evento> {
         return String.valueOf(super.count());
     }
 
-    @PUT
+    /*@PUT
     @Path("validar/{id}")
     @Consumes({MediaType.APPLICATION_JSON})
     public void validarEvento(@PathParam("id") int id){
@@ -140,7 +159,7 @@ public class EventoFacadeREST extends AbstractFacade<Evento> {
         e.setValidado(true);
         this.edit(e);
         //this.sendMail(evento);
-    }
+    }*/
     
     @GET
     @Path("{evento}/{usuario}")
