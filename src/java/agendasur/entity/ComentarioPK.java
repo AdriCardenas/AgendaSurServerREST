@@ -20,12 +20,12 @@ import javax.validation.constraints.Size;
 public class ComentarioPK implements Serializable {
 
     @Basic(optional = false)
-    @NotNull
-    @Size(min = 1, max = 50)
+    //@NotNull
+   // @Size(min = 1, max = 50)
     @Column(name = "USUARIO_EMAIL")
     private String usuarioEmail;
     @Basic(optional = false)
-    @NotNull
+   // @NotNull
     @Column(name = "EVENTO_ID")
     private int eventoId;
 

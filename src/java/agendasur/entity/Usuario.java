@@ -42,27 +42,27 @@ public class Usuario implements Serializable {
     // @Pattern(regexp="[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?", message="Invalid email")//if the field contains email address consider using this annotation to enforce field validation
     @Id
     @Basic(optional = false)
-    @NotNull
-    @Size(min = 1, max = 50)
+ //   @NotNull
+  //  @Size(min = 1, max = 50)
     @Column(name = "EMAIL")
     private String email;
     @Basic(optional = false)
-    @NotNull
-    @Size(min = 1, max = 50)
+   // @NotNull
+  //  @Size(min = 1, max = 50)
     @Column(name = "NOMBRE")
     private String nombre;
     @Basic(optional = false)
-    @NotNull
-    @Size(min = 1, max = 50)
+  //  @NotNull
+  //  @Size(min = 1, max = 50)
     @Column(name = "APELLIDOS")
     private String apellidos;
     @Basic(optional = false)
-    @NotNull
-    @Size(min = 1, max = 255)
+  //  @NotNull
+  //  @Size(min = 1, max = 255)
     @Column(name = "PASSWORD")
     private String password;
     @Basic(optional = false)
-    @NotNull
+   // @NotNull
     @Column(name = "TIPOUSUARIO")
     private int tipousuario;
     @ManyToMany(mappedBy = "usuarioCollection")

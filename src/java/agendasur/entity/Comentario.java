@@ -38,13 +38,13 @@ public class Comentario implements Serializable {
     @EmbeddedId
     protected ComentarioPK comentarioPK;
     @Basic(optional = false)
-    @NotNull
-    @Size(min = 1, max = 140)
+   // @NotNull
+   // @Size(min = 1, max = 140)
     @Column(name = "COMENTARIO")
     private String comentario;
     @Basic(optional = false)
-    @NotNull
-    @Size(min = 1, max = 80)
+   // @NotNull
+   // @Size(min = 1, max = 80)
     @Column(name = "FECHA")
     private String fecha;
     @JoinColumn(name = "EVENTO_ID", referencedColumnName = "ID", insertable = false, updatable = false)

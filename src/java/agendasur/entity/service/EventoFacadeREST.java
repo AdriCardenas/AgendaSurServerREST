@@ -44,10 +44,38 @@ public class EventoFacadeREST extends AbstractFacade<Evento> {
     }
 
     @POST
-    @Override
-    @Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-    public void create(Evento entity) {
-        super.create(entity);
+    @Produces({MediaType.APPLICATION_JSON})
+    @Consumes({MediaType.APPLICATION_JSON})
+    public String createEventoProxy(EventoProxy eventoProxy) {
+        //new evento
+        //añadir tag
+        //super.create(entity);
+        Evento evento = new Evento();
+
+        evento.setNombre(eventoProxy.nombre);
+        evento.setDescripcion(eventoProxy.descripcion);
+        evento.setFechainicio(eventoProxy.fechainicio);
+        evento.setFechafin(eventoProxy.fechafin);
+        evento.setDireccion(eventoProxy.direccion);
+        evento.setValidado(eventoProxy.validado);
+        evento.setCreador(em.find(Usuario.class, eventoProxy.creador));
+        evento.setLatitud(eventoProxy.latitud);
+        evento.setLongitud(eventoProxy.longitud);
+        //evento.setTagCollection(eventoProxy.tags.stream().map(Tag::new).collect(Collectors.toList()));
+        evento.setTagCollection(eventoProxy.tags.stream().map(nombreTag -> em.find(Tag.class, nombreTag)).collect(Collectors.toList()));
+
+        /*
+ for(String t : eventoProxy.tags){
+ if(evento.getTagCollection()==null){
+ evento.setTagCollection(new ArrayList<Tag>());
+ }
+ evento.getTagCollection().add(em.find(Tag.class, t));
+ }
+ evento.setComentarioCollection(new ArrayList<Comentario>());
+ evento.setUsuarioCollection(new ArrayList<Usuario>());
+         */
+        super.create(evento);
+        return "\"status\":\"evento creado correctamente\"";
     }
 
     @PUT
@@ -56,27 +84,27 @@ public class EventoFacadeREST extends AbstractFacade<Evento> {
     public void edit(@PathParam("id") Integer id, Evento entity) {
         super.edit(entity);
     }
-    
+
     @GET
     @Path("eventosByTag/{nombre}")
     @Produces({MediaType.APPLICATION_JSON})
     public List<EventoProxy> findEventosByTag(@PathParam("nombre") String nombre) {
         Tag t = em.find(Tag.class, nombre);
-        
+
         SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         Date currentDate = new Date();
         Query q;
         q = this.em.createQuery("select e from Evento e where :tag MEMBER OF e.tagCollection and e.validado = true and e.fechafin >= :currentDate");
         q.setParameter("tag", t);
         q.setParameter("currentDate", formatter.format(currentDate));
-        
+
         List<EventoProxy> listEventos = new ArrayList<>();
         for (Evento e : (List<Evento>) q.getResultList()) {
             listEventos.add(new EventoProxy(e));
         }
         return listEventos;
     }
-    
+
     @DELETE
     @Path("{id}")
     public void remove(@PathParam("id") Integer id) {
@@ -160,7 +188,6 @@ public class EventoFacadeREST extends AbstractFacade<Evento> {
         this.edit(e);
         //this.sendMail(evento);
     }*/
-    
     @GET
     @Path("{evento}/{usuario}")
     @Produces(MediaType.TEXT_PLAIN)
@@ -170,7 +197,7 @@ public class EventoFacadeREST extends AbstractFacade<Evento> {
         q = this.em.createQuery("select e from Evento e where e.id = :evento and :usuario MEMBER OF e.usuarioCollection");
         q.setParameter("usuario", u);
         q.setParameter("evento", evento);
-        return q.getResultList().size()>0;
+        return q.getResultList().size() > 0;
     }
 
     @Override
@@ -190,6 +217,10 @@ public class EventoFacadeREST extends AbstractFacade<Evento> {
         public String creador;
         public List<String> meGusta;
         public List<String> tags;
+        
+        public EventoProxy(){
+            
+        }
 
         public EventoProxy(Evento evento) {
             this.id = evento.getId();

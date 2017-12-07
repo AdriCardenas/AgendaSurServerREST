@@ -54,38 +54,38 @@ public class Evento implements Serializable {
     @Column(name = "ID")
     private Integer id;
     @Basic(optional = false)
-    @NotNull
-    @Size(min = 1, max = 50)
+    //@NotNull
+    //@Size(min = 1, max = 50)
     @Column(name = "NOMBRE")
     private String nombre;
     @Basic(optional = false)
-    @NotNull
-    @Size(min = 1, max = 200)
+    //@NotNull
+   // @Size(min = 1, max = 200)
     @Column(name = "DESCRIPCION")
     private String descripcion;
     @Basic(optional = false)
-    @NotNull
-    @Size(min = 1, max = 80)
+    //@NotNull
+   // @Size(min = 1, max = 80)
     @Column(name = "FECHAINICIO")
     private String fechainicio;
-    @Size(max = 80)
+   // @Size(max = 80)
     @Column(name = "FECHAFIN")
     private String fechafin;
     @Basic(optional = false)
-    @NotNull
-    @Size(min = 1, max = 200)
+   // @NotNull
+   // @Size(min = 1, max = 200)
     @Column(name = "DIRECCION")
     private String direccion;
     @Basic(optional = false)
-    @NotNull
+  //  @NotNull
     @Column(name = "VALIDADO")
     private Boolean validado;
     @Basic(optional = false)
-    @NotNull
+   // @NotNull
     @Column(name = "LATITUD")
     private float latitud;
     @Basic(optional = false)
-    @NotNull
+  //  @NotNull
     @Column(name = "LONGITUD")
     private float longitud;
     @JoinTable(name = "MEGUSTA", joinColumns = {
