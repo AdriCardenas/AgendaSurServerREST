@@ -64,20 +64,23 @@ public class ComentarioFacadeREST extends AbstractFacade<Comentario> {
     }
 
     @POST
-    @Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-    public void create(ComentarioProxy comentarioProxy) {
+    @Produces({MediaType.APPLICATION_JSON})
+    @Consumes({MediaType.APPLICATION_JSON})
+    public String create(ComentarioProxy comentarioProxy) {
         
         Comentario c = conversorComentarioProxyAComentario(comentarioProxy);
         
         super.create(c);
+        
+        return "\"status\":\"Comentario enviado. Gracias.\"";
     }
     
     private Comentario conversorComentarioProxyAComentario(ComentarioProxy comentarioProxy){
         Comentario comentario = new Comentario();
         
         comentario.setComentarioPK(comentarioProxy.comentarioPK);
-        comentario.setEvento(em.find(Evento.class, comentarioProxy.id));
-        comentario.setUsuario(em.find(Usuario.class, comentarioProxy.emailCreador));
+        comentario.setEvento(em.find(Evento.class, comentarioProxy.comentarioPK.getEventoId()));
+        comentario.setUsuario(em.find(Usuario.class, comentarioProxy.comentarioPK.getUsuarioEmail()));
         comentario.setComentario(comentarioProxy.comentario);
         comentario.setFecha(comentarioProxy.fecha);
         
@@ -154,8 +157,6 @@ public class ComentarioFacadeREST extends AbstractFacade<Comentario> {
         public ComentarioPK comentarioPK;
         public String fecha;
         public String comentario;
-        public int id;
-        public String emailCreador;
         public String nombreCreador;
         public String apellidosCreador;
         
@@ -166,9 +167,7 @@ public class ComentarioFacadeREST extends AbstractFacade<Comentario> {
         public ComentarioProxy(Comentario comentario){
             this.comentarioPK = comentario.getComentarioPK();
             this.fecha = comentario.getFecha();
-            this.comentario = comentario.getComentario();
-            this.id = comentario.getEvento().getId();
-            this.emailCreador = comentario.getUsuario().getEmail();   
+            this.comentario = comentario.getComentario(); 
             this.nombreCreador = comentario.getUsuario().getNombre();
             this.apellidosCreador = comentario.getUsuario().getApellidos();
         }
