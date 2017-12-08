@@ -61,6 +61,7 @@ public class EventoFacadeREST extends AbstractFacade<Evento> {
         evento.setCreador(em.find(Usuario.class, eventoProxy.creador));
         evento.setLatitud(eventoProxy.latitud);
         evento.setLongitud(eventoProxy.longitud);
+        List<String> tagsString = eventoProxy.tags;
         //evento.setTagCollection(eventoProxy.tags.stream().map(Tag::new).collect(Collectors.toList()));
         evento.setTagCollection(eventoProxy.tags.stream().map(nombreTag -> em.find(Tag.class, nombreTag)).collect(Collectors.toList()));
 
@@ -215,8 +216,8 @@ public class EventoFacadeREST extends AbstractFacade<Evento> {
         public boolean validado;
         public float latitud, longitud;
         public String creador;
-        public List<String> meGusta;
-        public List<String> tags;
+        public List<String> meGusta = new ArrayList<>();
+        public List<String> tags = new ArrayList<>();
         
         public EventoProxy(){
             
@@ -238,7 +239,7 @@ public class EventoFacadeREST extends AbstractFacade<Evento> {
             this.meGusta = evento.getUsuarioCollection().stream().map(e -> e.getEmail()).collect(Collectors.toList());
 
             // Completar lista de me gusta con los tags de un evento
-            this.tags = new ArrayList<>();
+            //this.tags = new ArrayList<>();
 
             for (Tag tag : evento.getTagCollection()) {
                 this.tags.add(tag.getNombre());
