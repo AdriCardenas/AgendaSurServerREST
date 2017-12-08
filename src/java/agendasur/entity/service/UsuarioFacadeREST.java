@@ -5,8 +5,12 @@
  */
 package agendasur.entity.service;
 
+import agendasur.entity.Tag;
 import agendasur.entity.Usuario;
+import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -43,6 +47,30 @@ public class UsuarioFacadeREST extends AbstractFacade<Usuario> {
     }
 
     @PUT
+    @Path("asignarTag/{id}")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
+    public String asignarTagsAUsuario(@PathParam("id") String email, List<String> listaTagsString) {
+        Usuario usuario = super.find(email);
+
+        List<Tag> listTag = new ArrayList<>();
+        for (String s : listaTagsString) {
+            Tag t = em.find(Tag.class, s);
+            if (!t.getUsuarioCollection().contains(usuario)) {
+                t.getUsuarioCollection().add(usuario);
+            }
+            listTag.add(t);
+            em.merge(t);
+        }
+
+        usuario.setTagCollection(listTag);
+        
+        super.edit(usuario);
+
+        return "\"status\":\"Sus tags han sido actualizados.\"";
+    }
+
+    @PUT
     @Path("{id}")
     @Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
     public void edit(@PathParam("id") String id, Usuario entity) {
@@ -70,6 +98,19 @@ public class UsuarioFacadeREST extends AbstractFacade<Usuario> {
     }
 
     @GET
+    @Path("listar")
+    @Produces({MediaType.APPLICATION_JSON})
+    public List<UsuarioProxy> listarUsuario() {
+        //return super.findAll().stream().map(UsuarioProxy::new).collect(Collectors.toList());
+        List<UsuarioProxy> resultado = new ArrayList<>();
+        for (Usuario u : super.findAll()) {
+            UsuarioProxy p = new UsuarioProxy(u);
+            resultado.add(p);
+        }
+        return resultado;
+    }
+
+    @GET
     @Path("{from}/{to}")
     @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
     public List<Usuario> findRange(@PathParam("from") Integer from, @PathParam("to") Integer to) {
@@ -87,5 +128,24 @@ public class UsuarioFacadeREST extends AbstractFacade<Usuario> {
     protected EntityManager getEntityManager() {
         return em;
     }
-    
+
+    public static class UsuarioProxy implements Serializable {
+
+        public String email;
+        public String nombre;
+        public String apellidos;
+        public List<String> tagsUsuario = new ArrayList<>();
+
+        public UsuarioProxy() {
+
+        }
+
+        public UsuarioProxy(Usuario usuario) {
+            this.email = usuario.getEmail();
+            this.nombre = usuario.getNombre();
+            this.apellidos = usuario.getApellidos();
+            this.tagsUsuario = usuario.getTagCollection().stream().map(tag -> tag.getNombre()).collect(Collectors.toList());
+        }
+    }
+
 }

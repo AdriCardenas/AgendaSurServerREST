@@ -12,6 +12,7 @@ import agendasur.location.Distancia;
 import java.io.Serializable;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -158,8 +159,8 @@ public class EventoFacadeREST extends AbstractFacade<Evento> {
         }
         return listEventos;
     }
-    
-    private List<Evento> obtenerEventosNoCaducadosYValidados(){
+
+    private List<Evento> obtenerEventosNoCaducadosYValidados() {
         SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         Date currentDate = new Date();
         Query q;
@@ -199,22 +200,25 @@ public class EventoFacadeREST extends AbstractFacade<Evento> {
         return String.valueOf(super.count());
     }
 
-    /*@PUT
+    @PUT
     @Path("validar/{id}")
-    @Consumes({MediaType.APPLICATION_JSON})
-    public void validarEvento(@PathParam("id") int id){
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public String validarEvento(@PathParam("id") int id) {
         Evento e = em.find(Evento.class, id);
         e.setValidado(true);
         this.edit(e);
         //this.sendMail(evento);
-    }*/
+        return "\"status\":\"Se ha validado el evento\"";
+    }
+
     @GET
     @Path("eventosOrdenadorPorDistancia/{latitud}/{longitud}")
     @Produces(MediaType.APPLICATION_JSON)
     public List<EventoProxy> findEventosOrdenadosPorDistancia(@PathParam("latitud") float latitud, @PathParam("longitud") float longitud) {
-        
+
         List<EventoProxy> listEventos = new ArrayList<>();
-        for (Evento e : obtenerEventosPorDistancia(latitud,longitud)) {
+        for (Evento e : obtenerEventosPorDistancia(latitud, longitud)) {
             listEventos.add(new EventoProxy(e));
         }
         return listEventos;
@@ -227,7 +231,7 @@ public class EventoFacadeREST extends AbstractFacade<Evento> {
                         Distancia.getDistancia(evento2.getLatitud(), evento2.getLongitud(), latitud, longitud)));
         return listaEventos;
     }
-     
+
     @GET
     @Path("{evento}/{usuario}")
     @Produces(MediaType.TEXT_PLAIN)
@@ -238,6 +242,26 @@ public class EventoFacadeREST extends AbstractFacade<Evento> {
         q.setParameter("usuario", u);
         q.setParameter("evento", evento);
         return q.getResultList().size() > 0;
+    }
+
+    @PUT
+    @Path("{evento}/{usuario}")
+    @Consumes({MediaType.APPLICATION_JSON})
+    public String darMeGusta(@PathParam("evento") int evento, @PathParam("usuario") String usuario) {
+        Usuario u = em.find(Usuario.class, usuario);
+        Evento e = super.find(evento);
+        Collection<Usuario> meGustasEvento = e.getUsuarioCollection();
+        meGustasEvento.add(u);
+        e.setUsuarioCollection(meGustasEvento);
+
+        Collection<Evento> meGustasUsuario = u.getEventoCollection();
+        meGustasUsuario.add(e);
+        u.setEventoCollection(meGustasUsuario);
+
+        super.edit(e);
+        em.merge(u);//hace el edit desde el em (persist para crear)
+
+        return "\"status\":\"darMeGusta correctamente\"";
     }
 
     @Override
