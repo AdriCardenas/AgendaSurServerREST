@@ -9,6 +9,7 @@ import agendasur.entity.Evento;
 import agendasur.entity.Tag;
 import agendasur.entity.Usuario;
 import agendasur.location.Distancia;
+import agendasur.mail.Mail;
 import java.io.Serializable;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -49,9 +50,6 @@ public class EventoFacadeREST extends AbstractFacade<Evento> {
     @Produces({MediaType.APPLICATION_JSON})
     @Consumes({MediaType.APPLICATION_JSON})
     public String createEventoProxy(EventoProxy eventoProxy) {
-        //new evento
-        //añadir tag
-        //super.create(entity);
         Evento evento = new Evento();
 
         evento.setNombre(eventoProxy.nombre);
@@ -66,18 +64,11 @@ public class EventoFacadeREST extends AbstractFacade<Evento> {
         List<String> tagsString = eventoProxy.tags;
         //evento.setTagCollection(eventoProxy.tags.stream().map(Tag::new).collect(Collectors.toList()));
         evento.setTagCollection(eventoProxy.tags.stream().map(nombreTag -> em.find(Tag.class, nombreTag)).collect(Collectors.toList()));
-
-        /*
- for(String t : eventoProxy.tags){
- if(evento.getTagCollection()==null){
- evento.setTagCollection(new ArrayList<Tag>());
- }
- evento.getTagCollection().add(em.find(Tag.class, t));
- }
- evento.setComentarioCollection(new ArrayList<Comentario>());
- evento.setUsuarioCollection(new ArrayList<Usuario>());
-         */
+        
         super.create(evento);
+        
+        Mail.sendMail(evento);
+        
         return "\"status\":\"evento creado correctamente\"";
     }
 
@@ -100,6 +91,9 @@ public class EventoFacadeREST extends AbstractFacade<Evento> {
         evento.setTagCollection(eventoProxy.tags.stream().map(nombreTag -> em.find(Tag.class, nombreTag)).collect(Collectors.toList()));
 
         super.edit(evento);
+        
+        Mail.sendMail(evento);
+        
         return "\"status\":\"evento editado correctamente\"";
     }
 
@@ -208,7 +202,7 @@ public class EventoFacadeREST extends AbstractFacade<Evento> {
         Evento e = em.find(Evento.class, id);
         e.setValidado(true);
         this.edit(e);
-        //this.sendMail(evento);
+        Mail.sendMail(e);
         return "\"status\":\"Se ha validado el evento\"";
     }
 
