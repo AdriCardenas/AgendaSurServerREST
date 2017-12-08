@@ -8,6 +8,7 @@ package agendasur.entity.service;
 import agendasur.entity.Evento;
 import agendasur.entity.Tag;
 import agendasur.entity.Usuario;
+import agendasur.location.Distancia;
 import java.io.Serializable;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -83,7 +84,7 @@ public class EventoFacadeREST extends AbstractFacade<Evento> {
     @Path("{id}")
     @Consumes({MediaType.APPLICATION_JSON})
     public String edit(@PathParam("id") Integer id, EventoProxy eventoProxy) {
-         Evento evento = super.find( id);
+        Evento evento = super.find(id);
 
         evento.setNombre(eventoProxy.nombre);
         evento.setDescripcion(eventoProxy.descripcion);
@@ -96,7 +97,7 @@ public class EventoFacadeREST extends AbstractFacade<Evento> {
         evento.setLongitud(eventoProxy.longitud);
         List<String> tagsString = eventoProxy.tags;
         evento.setTagCollection(eventoProxy.tags.stream().map(nombreTag -> em.find(Tag.class, nombreTag)).collect(Collectors.toList()));
-        
+
         super.edit(evento);
         return "\"status\":\"evento editado correctamente\"";
     }
@@ -151,17 +152,20 @@ public class EventoFacadeREST extends AbstractFacade<Evento> {
     @Path("eventosNoCaducadosYValidados")
     @Produces({MediaType.APPLICATION_JSON})
     public List<EventoProxy> findEventosNoCaducadosYValidados() {
+        List<EventoProxy> listEventos = new ArrayList<>();
+        for (Evento e : (List<Evento>) obtenerEventosNoCaducadosYValidados()) {
+            listEventos.add(new EventoProxy(e));
+        }
+        return listEventos;
+    }
+    
+    private List<Evento> obtenerEventosNoCaducadosYValidados(){
         SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         Date currentDate = new Date();
         Query q;
         q = this.em.createQuery("select e from Evento e where e.validado = true and e.fechafin >= :currentDate");
         q.setParameter("currentDate", formatter.format(currentDate));
-
-        List<EventoProxy> listEventos = new ArrayList<>();
-        for (Evento e : (List<Evento>) q.getResultList()) {
-            listEventos.add(new EventoProxy(e));
-        }
-        return listEventos;
+        return q.getResultList();
     }
 
     @GET
@@ -205,6 +209,26 @@ public class EventoFacadeREST extends AbstractFacade<Evento> {
         //this.sendMail(evento);
     }*/
     @GET
+    @Path("eventosOrdenadorPorDistancia/{latitud}/{longitud}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public List<EventoProxy> findEventosOrdenadosPorDistancia(@PathParam("latitud") float latitud, @PathParam("longitud") float longitud) {
+        
+        List<EventoProxy> listEventos = new ArrayList<>();
+        for (Evento e : obtenerEventosPorDistancia(latitud,longitud)) {
+            listEventos.add(new EventoProxy(e));
+        }
+        return listEventos;
+    }
+
+    private List<Evento> obtenerEventosPorDistancia(float latitud, float longitud) {
+        List<Evento> listaEventos = obtenerEventosNoCaducadosYValidados();
+        listaEventos.sort((evento1, evento2)
+                -> Double.compare(Distancia.getDistancia(evento1.getLatitud(), evento1.getLongitud(), latitud, longitud),
+                        Distancia.getDistancia(evento2.getLatitud(), evento2.getLongitud(), latitud, longitud)));
+        return listaEventos;
+    }
+     
+    @GET
     @Path("{evento}/{usuario}")
     @Produces(MediaType.TEXT_PLAIN)
     public boolean existeMegusta(@PathParam("evento") int evento, @PathParam("usuario") String usuario) {
@@ -233,9 +257,9 @@ public class EventoFacadeREST extends AbstractFacade<Evento> {
         public String creador;
         public List<String> meGusta = new ArrayList<>();
         public List<String> tags = new ArrayList<>();
-        
-        public EventoProxy(){
-            
+
+        public EventoProxy() {
+
         }
 
         public EventoProxy(Evento evento) {
@@ -255,7 +279,6 @@ public class EventoFacadeREST extends AbstractFacade<Evento> {
 
             // Completar lista de me gusta con los tags de un evento
             //this.tags = new ArrayList<>();
-
             for (Tag tag : evento.getTagCollection()) {
                 this.tags.add(tag.getNombre());
             }
