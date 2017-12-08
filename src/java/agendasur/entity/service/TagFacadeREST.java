@@ -5,11 +5,15 @@
  */
 package agendasur.entity.service;
 
+import agendasur.entity.Evento;
 import agendasur.entity.Tag;
+import agendasur.entity.Usuario;
+import java.util.ArrayList;
 import java.util.List;
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import javax.persistence.Query;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -83,9 +87,66 @@ public class TagFacadeREST extends AbstractFacade<Tag> {
         return String.valueOf(super.count());
     }
 
+    @GET
+    @Path("tagsByUser/{email}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public List<TagProxy> findTagsByUser(@PathParam("email") String email) {
+        Usuario u = em.find(Usuario.class, email);
+        Query q;
+        q = this.em.createQuery("select t from Tag t where :usuario MEMBER OF t.usuarioCollection");
+        q.setParameter("usuario", u);
+
+        List<TagProxy> listTagProxy = new ArrayList<>();
+        for (Tag t : (List<Tag>) q.getResultList()) {
+            listTagProxy.add(new TagProxy(t));
+        }
+
+        return listTagProxy;
+    }
+
+    @GET
+    @Path("tagsByEvento/{idEvento}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public List<TagProxy> findTagsByEvento(@PathParam("idEvento") int idEvento) {
+        Evento e = em.find(Evento.class, idEvento);
+        Query q;
+        q = this.em.createQuery("select t from Tag t where :evento MEMBER OF t.eventoCollection");
+        q.setParameter("evento", e);
+
+        List<TagProxy> listTagProxy = new ArrayList<>();
+        for (Tag t : (List<Tag>) q.getResultList()) {
+            listTagProxy.add(new TagProxy(t));
+        }
+
+        return listTagProxy;
+    }
+
     @Override
     protected EntityManager getEntityManager() {
         return em;
     }
-    
+
+    public static class TagProxy {
+
+        public String nombre;
+        public List<String> listUsuario = new ArrayList<>();
+        public List<Integer> listEvento = new ArrayList<>();
+
+        public TagProxy() {
+
+        }
+
+        public TagProxy(Tag t) {
+            nombre = t.getNombre();
+
+            for (Usuario u : t.getUsuarioCollection()) {
+                listUsuario.add(u.getEmail());
+            }
+
+            for (Evento e : t.getEventoCollection()) {
+                listEvento.add(e.getId());
+            }
+        }
+    }
+
 }
