@@ -39,11 +39,13 @@ public class Mail {
 
     public static void sendMail(Evento e){
         if(e.getValidado()){
+
+              enviarMail(e.getCreador().getEmail(), "Su evento '" + e.getNombre() + "' ha sido publicado.");
+                    
             for(Tag t : e.getTagCollection()){
                 for(Usuario u: t.getUsuarioCollection()){
-                    if(u.getEmail().equals(e.getCreador().getEmail())){
-                        enviarMail(u.getEmail(), "Su evento '" + e.getNombre() + "' ha sido publicado.");
-                    }else{
+                    if(!u.getEmail().equals(e.getCreador().getEmail())){
+
                         enviarMail(u.getEmail(), "Se ha creado un evento que contiene el TAG '" + t.getNombre() + "', y puede que te interese.");
                     }
                 }

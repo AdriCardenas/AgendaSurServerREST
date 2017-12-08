@@ -51,14 +51,14 @@ public class EventoFacadeREST extends AbstractFacade<Evento> {
     @Consumes({MediaType.APPLICATION_JSON})
     public String createEventoProxy(EventoProxy eventoProxy) {
         Evento evento = new Evento();
-
+        Usuario u = em.find(Usuario.class, eventoProxy.creador);
         evento.setNombre(eventoProxy.nombre);
         evento.setDescripcion(eventoProxy.descripcion);
         evento.setFechainicio(eventoProxy.fechainicio);
         evento.setFechafin(eventoProxy.fechafin);
         evento.setDireccion(eventoProxy.direccion);
-        evento.setValidado(eventoProxy.validado);
-        evento.setCreador(em.find(Usuario.class, eventoProxy.creador));
+        evento.setValidado(u.getTipousuario() != 1);
+        evento.setCreador(u);
         evento.setLatitud(eventoProxy.latitud);
         evento.setLongitud(eventoProxy.longitud);
         List<String> tagsString = eventoProxy.tags;
@@ -66,8 +66,10 @@ public class EventoFacadeREST extends AbstractFacade<Evento> {
         evento.setTagCollection(eventoProxy.tags.stream().map(nombreTag -> em.find(Tag.class, nombreTag)).collect(Collectors.toList()));
         
         super.create(evento);
-        
-        Mail.sendMail(evento);
+        if(evento.getValidado()){
+            Mail.sendMail(evento);
+        }
+
         
         return "\"status\":\"evento creado correctamente\"";
     }
