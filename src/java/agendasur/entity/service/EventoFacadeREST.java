@@ -82,8 +82,23 @@ public class EventoFacadeREST extends AbstractFacade<Evento> {
     @PUT
     @Path("{id}")
     @Consumes({MediaType.APPLICATION_JSON})
-    public void edit(@PathParam("id") Integer id, Evento entity) {
-        super.edit(entity);
+    public String edit(@PathParam("id") Integer id, EventoProxy eventoProxy) {
+         Evento evento = super.find( id);
+
+        evento.setNombre(eventoProxy.nombre);
+        evento.setDescripcion(eventoProxy.descripcion);
+        evento.setFechainicio(eventoProxy.fechainicio);
+        evento.setFechafin(eventoProxy.fechafin);
+        evento.setDireccion(eventoProxy.direccion);
+        evento.setValidado(eventoProxy.validado);
+        evento.setCreador(em.find(Usuario.class, eventoProxy.creador));
+        evento.setLatitud(eventoProxy.latitud);
+        evento.setLongitud(eventoProxy.longitud);
+        List<String> tagsString = eventoProxy.tags;
+        evento.setTagCollection(eventoProxy.tags.stream().map(nombreTag -> em.find(Tag.class, nombreTag)).collect(Collectors.toList()));
+        
+        super.edit(evento);
+        return "\"status\":\"evento editado correctamente\"";
     }
 
     @GET
