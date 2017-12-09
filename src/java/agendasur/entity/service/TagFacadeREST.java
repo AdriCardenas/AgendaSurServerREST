@@ -41,14 +41,14 @@ public class TagFacadeREST extends AbstractFacade<Tag> {
 
     @POST
     @Override
-    @Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+    @Consumes(MediaType.APPLICATION_JSON)
     public void create(Tag entity) {
         super.create(entity);
     }
 
     @PUT
     @Path("{id}")
-    @Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+    @Consumes(MediaType.APPLICATION_JSON)
     public void edit(@PathParam("id") String id, Tag entity) {
         super.edit(entity);
     }
@@ -61,21 +61,24 @@ public class TagFacadeREST extends AbstractFacade<Tag> {
 
     @GET
     @Path("{id}")
-    @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+    @Produces(MediaType.APPLICATION_JSON)
     public Tag find(@PathParam("id") String id) {
         return super.find(id);
     }
 
     @GET
-    @Override
-    @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-    public List<Tag> findAll() {
-        return super.findAll();
+    @Produces(MediaType.APPLICATION_JSON)
+    public List<TagProxy> obtenerTodosLosTags() {
+        List<TagProxy> listTagProxy = new ArrayList<>();
+        for(Tag t : super.findAll()){
+            listTagProxy.add(new TagProxy(t));
+        }
+        return listTagProxy;
     }
 
     @GET
     @Path("{from}/{to}")
-    @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+    @Produces(MediaType.APPLICATION_JSON)
     public List<Tag> findRange(@PathParam("from") Integer from, @PathParam("to") Integer to) {
         return super.findRange(new int[]{from, to});
     }

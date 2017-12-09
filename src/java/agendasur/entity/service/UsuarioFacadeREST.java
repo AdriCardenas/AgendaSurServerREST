@@ -40,10 +40,19 @@ public class UsuarioFacadeREST extends AbstractFacade<Usuario> {
     }
 
     @POST
-    @Override
-    @Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-    public void create(Usuario entity) {
-        super.create(entity);
+    @Consumes({MediaType.APPLICATION_JSON})
+    @Produces(MediaType.APPLICATION_JSON)
+    public String create(UsuarioProxy usuarioProxy) {
+        
+        Usuario u = new Usuario();
+        u.setTipousuario(1);
+        u.setApellidos(usuarioProxy.apellidos);
+        u.setEmail(usuarioProxy.email);
+        u.setNombre(usuarioProxy.nombre);
+        u.setPassword(usuarioProxy.nombre);
+        
+        super.create(u);
+        return "{\"status\":\"Usuario creado correctamente\"}";
     }
 
     @PUT
@@ -67,12 +76,12 @@ public class UsuarioFacadeREST extends AbstractFacade<Usuario> {
         
         super.edit(usuario);
 
-        return "\"status\":\"Sus tags han sido actualizados.\"";
+        return "{\"status\":\"Sus tags han sido actualizados.\"}";
     }
 
     @PUT
     @Path("{id}")
-    @Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+    @Consumes({MediaType.APPLICATION_JSON})
     public void edit(@PathParam("id") String id, Usuario entity) {
         super.edit(entity);
     }
@@ -85,16 +94,19 @@ public class UsuarioFacadeREST extends AbstractFacade<Usuario> {
 
     @GET
     @Path("{id}")
-    @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+    @Produces({MediaType.APPLICATION_JSON})
     public Usuario find(@PathParam("id") String id) {
         return super.find(id);
     }
 
     @GET
-    @Override
-    @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-    public List<Usuario> findAll() {
-        return super.findAll();
+    @Produces({MediaType.APPLICATION_JSON})
+    public List<UsuarioProxy> obtenerUsuarios() {
+        List<UsuarioProxy> list = new ArrayList<>();
+        for(Usuario u : super.findAll()){
+            list.add(new UsuarioProxy(u));
+        }
+        return list;
     }
 
     @GET

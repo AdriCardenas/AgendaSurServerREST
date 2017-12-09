@@ -47,8 +47,8 @@ public class EventoFacadeREST extends AbstractFacade<Evento> {
     }
 
     @POST
-    @Produces({MediaType.APPLICATION_JSON})
-    @Consumes({MediaType.APPLICATION_JSON})
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
     public String createEventoProxy(EventoProxy eventoProxy) {
         Evento evento = new Evento();
         Usuario u = em.find(Usuario.class, eventoProxy.creador);
@@ -71,7 +71,7 @@ public class EventoFacadeREST extends AbstractFacade<Evento> {
         }
 
         
-        return "\"status\":\"evento creado correctamente\"";
+        return "{\"status\":\"evento creado correctamente\"}";
     }
 
     @PUT
@@ -96,7 +96,7 @@ public class EventoFacadeREST extends AbstractFacade<Evento> {
         
         Mail.sendMail(evento);
         
-        return "\"status\":\"evento editado correctamente\"";
+        return "{\"status\":\"evento editado correctamente\"}";
     }
 
     @GET
@@ -205,7 +205,7 @@ public class EventoFacadeREST extends AbstractFacade<Evento> {
         e.setValidado(true);
         this.edit(e);
         Mail.sendMail(e);
-        return "\"status\":\"Se ha validado el evento\"";
+        return "{\"status\":\"Se ha validado el evento\"}";
     }
 
     @GET
@@ -257,7 +257,7 @@ public class EventoFacadeREST extends AbstractFacade<Evento> {
         super.edit(e);
         em.merge(u);//hace el edit desde el em (persist para crear)
 
-        return "\"status\":\"darMeGusta correctamente\"";
+        return "{\"status\":\"darMeGusta correctamente\"}";
     }
 
     @Override

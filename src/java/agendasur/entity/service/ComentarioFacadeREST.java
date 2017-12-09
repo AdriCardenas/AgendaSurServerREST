@@ -72,7 +72,7 @@ public class ComentarioFacadeREST extends AbstractFacade<Comentario> {
         
         super.create(c);
         
-        return "\"status\":\"Comentario enviado. Gracias.\"";
+        return "{\"status\":\"Comentario enviado. Gracias.\"}";
     }
     
     private Comentario conversorComentarioProxyAComentario(ComentarioProxy comentarioProxy){
