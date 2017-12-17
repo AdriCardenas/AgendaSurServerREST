@@ -44,15 +44,20 @@ public class UsuarioFacadeREST extends AbstractFacade<Usuario> {
     @Produces(MediaType.APPLICATION_JSON)
     public String create(UsuarioProxy usuarioProxy) {
         
-        Usuario u = new Usuario();
-        u.setTipousuario(1);
-        u.setApellidos(usuarioProxy.apellidos);
-        u.setEmail(usuarioProxy.email);
-        u.setNombre(usuarioProxy.nombre);
-        u.setPassword(usuarioProxy.nombre);
+        if (super.find(usuarioProxy.email) != null){
+            return "{\"status\":\"Usuario ya existe\"}";
+        } else {
+            Usuario u = new Usuario();
+            u.setTipousuario(1);
+            u.setApellidos(usuarioProxy.apellidos);
+            u.setEmail(usuarioProxy.email);
+            u.setNombre(usuarioProxy.nombre);
+            u.setPassword(usuarioProxy.nombre);
+            
+            super.create(u);
+            return "{\"status\":\"Usuario creado correctamente\"}";
+        }
         
-        super.create(u);
-        return "{\"status\":\"Usuario creado correctamente\"}";
     }
 
     @PUT
