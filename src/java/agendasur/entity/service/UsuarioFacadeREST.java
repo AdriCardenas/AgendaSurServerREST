@@ -151,6 +151,7 @@ public class UsuarioFacadeREST extends AbstractFacade<Usuario> {
         public String email;
         public String nombre;
         public String apellidos;
+        public int tipoUsuario;
         public List<String> tagsUsuario = new ArrayList<>();
 
         public UsuarioProxy() {
@@ -162,6 +163,7 @@ public class UsuarioFacadeREST extends AbstractFacade<Usuario> {
             this.nombre = usuario.getNombre();
             this.apellidos = usuario.getApellidos();
             this.tagsUsuario = usuario.getTagCollection().stream().map(tag -> tag.getNombre()).collect(Collectors.toList());
+            this.tipoUsuario = usuario.getTipousuario();
         }
     }
 
