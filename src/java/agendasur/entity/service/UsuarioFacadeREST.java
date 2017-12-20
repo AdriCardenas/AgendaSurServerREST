@@ -87,8 +87,26 @@ public class UsuarioFacadeREST extends AbstractFacade<Usuario> {
     @PUT
     @Path("{id}")
     @Consumes({MediaType.APPLICATION_JSON})
-    public void edit(@PathParam("id") String id, Usuario entity) {
-        super.edit(entity);
+    @Produces(MediaType.APPLICATION_JSON)
+    public String edit(@PathParam("id") String id, UsuarioProxy usuarioProxy) {
+
+        Usuario u = super.find(id);
+
+        if (!u.getNombre().equals(usuarioProxy.nombre)) {
+            u.setNombre(usuarioProxy.nombre);
+            u.setPassword(usuarioProxy.nombre);
+        }
+
+        if (!u.getApellidos().equals(usuarioProxy.apellidos)) {
+            u.setApellidos(usuarioProxy.apellidos);
+        }
+
+        if (u.getTipousuario() != usuarioProxy.tipoUsuario) {
+            u.setTipousuario(usuarioProxy.tipoUsuario);
+        }
+
+        super.edit(u);
+        return "{\"status\":\"Usuario editado correctamente\"}";
     }
 
     @DELETE
