@@ -43,8 +43,8 @@ public class UsuarioFacadeREST extends AbstractFacade<Usuario> {
     @Consumes({MediaType.APPLICATION_JSON})
     @Produces(MediaType.APPLICATION_JSON)
     public String create(UsuarioProxy usuarioProxy) {
-        
-        if (super.find(usuarioProxy.email) != null){
+
+        if (super.find(usuarioProxy.email) != null) {
             return "{\"status\":\"Usuario ya existe\"}";
         } else {
             Usuario u = new Usuario();
@@ -53,11 +53,11 @@ public class UsuarioFacadeREST extends AbstractFacade<Usuario> {
             u.setEmail(usuarioProxy.email);
             u.setNombre(usuarioProxy.nombre);
             u.setPassword(usuarioProxy.nombre);
-            
+
             super.create(u);
             return "{\"status\":\"Usuario creado correctamente\"}";
         }
-        
+
     }
 
     @PUT
@@ -78,7 +78,7 @@ public class UsuarioFacadeREST extends AbstractFacade<Usuario> {
         }
 
         usuario.setTagCollection(listTag);
-        
+
         super.edit(usuario);
 
         return "{\"status\":\"Sus tags han sido actualizados.\"}";
@@ -105,6 +105,20 @@ public class UsuarioFacadeREST extends AbstractFacade<Usuario> {
             u.setTipousuario(usuarioProxy.tipoUsuario);
         }
 
+        if (u.getTagCollection() != null && u.getTagCollection().size() > 0) {
+            List<Tag> listTag = new ArrayList<>();
+            for (String s : usuarioProxy.tagsUsuario) {
+                Tag t = em.find(Tag.class, s);
+                if (!t.getUsuarioCollection().contains(u)) {
+                    t.getUsuarioCollection().add(u);
+                }
+                listTag.add(t);
+                em.merge(t);
+            }
+
+            u.setTagCollection(listTag);
+        }
+
         super.edit(u);
         return "{\"status\":\"Usuario editado correctamente\"}";
     }
@@ -126,7 +140,7 @@ public class UsuarioFacadeREST extends AbstractFacade<Usuario> {
     @Produces({MediaType.APPLICATION_JSON})
     public List<UsuarioProxy> obtenerUsuarios() {
         List<UsuarioProxy> list = new ArrayList<>();
-        for(Usuario u : super.findAll()){
+        for (Usuario u : super.findAll()) {
             list.add(new UsuarioProxy(u));
         }
         return list;
