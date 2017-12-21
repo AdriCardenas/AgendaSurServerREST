@@ -40,7 +40,7 @@ public class UsuarioFacadeREST extends AbstractFacade<Usuario> {
     }
 
     @POST
-    @Consumes({MediaType.APPLICATION_JSON})
+    @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public String create(UsuarioProxy usuarioProxy) {
 
@@ -132,8 +132,8 @@ public class UsuarioFacadeREST extends AbstractFacade<Usuario> {
     @GET
     @Path("{id}")
     @Produces({MediaType.APPLICATION_JSON})
-    public Usuario find(@PathParam("id") String id) {
-        return super.find(id);
+    public UsuarioProxy find(@PathParam("id") String id) {
+        return new UsuarioProxy(super.find(id)) ;
     }
 
     @GET
