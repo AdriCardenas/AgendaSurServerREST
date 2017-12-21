@@ -83,10 +83,12 @@ public class EventoFacadeREST extends AbstractFacade<Evento> {
         evento.setDescripcion(eventoProxy.descripcion);
         
         if(eventoProxy.fechainicio!=null&&!eventoProxy.fechainicio.equals("")){
+            eventoProxy.fechainicio = eventoProxy.fechainicio.replace('T',' ');
             evento.setFechainicio(eventoProxy.fechainicio);
         }
         
         if(eventoProxy.fechainicio!=null&&!eventoProxy.fechainicio.equals("")){
+            eventoProxy.fechafin = eventoProxy.fechafin.replace('T',' ');
             evento.setFechafin(eventoProxy.fechafin);
         }
         
