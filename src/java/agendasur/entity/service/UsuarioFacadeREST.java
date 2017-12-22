@@ -65,21 +65,28 @@ public class UsuarioFacadeREST extends AbstractFacade<Usuario> {
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     public String asignarTagsAUsuario(@PathParam("id") String email, List<String> listaTagsString) {
-        Usuario usuario = super.find(email);
+        Usuario u = super.find(email);
 
         List<Tag> listTag = new ArrayList<>();
         for (String s : listaTagsString) {
             Tag t = em.find(Tag.class, s);
-            if (!t.getUsuarioCollection().contains(usuario)) {
-                t.getUsuarioCollection().add(usuario);
+            if (!t.getUsuarioCollection().contains(u)) {
+                t.getUsuarioCollection().add(u);
+
             }
             listTag.add(t);
-            em.merge(t);
         }
 
-        usuario.setTagCollection(listTag);
+        for (Tag t : u.getTagCollection()) {
+            if (!listTag.contains(t)) {
+                t.getUsuarioCollection().remove(u);
+                em.merge(t);
+            }
+        }
+        
+        u.setTagCollection(listTag);
 
-        super.edit(usuario);
+        super.edit(u);
 
         return "{\"status\":\"Sus tags han sido actualizados.\"}";
     }
@@ -105,19 +112,24 @@ public class UsuarioFacadeREST extends AbstractFacade<Usuario> {
             u.setTipousuario(usuarioProxy.tipoUsuario);
         }
 
-        if (u.getTagCollection() != null && u.getTagCollection().size() > 0) {
-            List<Tag> listTag = new ArrayList<>();
-            for (String s : usuarioProxy.tagsUsuario) {
-                Tag t = em.find(Tag.class, s);
-                if (!t.getUsuarioCollection().contains(u)) {
-                    t.getUsuarioCollection().add(u);
-                }
-                listTag.add(t);
+        List<Tag> listTag = new ArrayList<>();
+        for (String s : usuarioProxy.tagsUsuario) {
+            Tag t = em.find(Tag.class, s);
+            if (!t.getUsuarioCollection().contains(u)) {
+                t.getUsuarioCollection().add(u);
+
+            }
+            listTag.add(t);
+        }
+
+        for (Tag t : u.getTagCollection()) {
+            if (!listTag.contains(t)) {
+                t.getUsuarioCollection().remove(u);
                 em.merge(t);
             }
-
-            u.setTagCollection(listTag);
         }
+
+        u.setTagCollection(listTag);
 
         super.edit(u);
         return "{\"status\":\"Usuario editado correctamente\"}";
@@ -133,7 +145,7 @@ public class UsuarioFacadeREST extends AbstractFacade<Usuario> {
     @Path("{id}")
     @Produces({MediaType.APPLICATION_JSON})
     public UsuarioProxy find(@PathParam("id") String id) {
-        return new UsuarioProxy(super.find(id)) ;
+        return new UsuarioProxy(super.find(id));
     }
 
     @GET
