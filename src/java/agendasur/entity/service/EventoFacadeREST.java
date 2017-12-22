@@ -97,9 +97,35 @@ public class EventoFacadeREST extends AbstractFacade<Evento> {
         evento.setCreador(em.find(Usuario.class, eventoProxy.creador));
         evento.setLatitud(eventoProxy.latitud);
         evento.setLongitud(eventoProxy.longitud);
-        List<String> tagsString = eventoProxy.tags;
-        evento.setTagCollection(eventoProxy.tags.stream().map(nombreTag -> em.find(Tag.class, nombreTag)).collect(Collectors.toList()));
+        
+        List<Tag> listTag = new ArrayList<>();
+        /*
+        listTag = eventoProxy.tags.stream()
+                .map(nombreEvento -> em.find(Tag.class,nombreEvento))
+                .collect(Collectors.toList());
+        listTag.stream()
+                .filter(tag-> !tag.getEventoCollection().contains(evento))
+                .map(tag -> tag.getEventoCollection().add(evento));
+        */
+        
+        for (String s : eventoProxy.tags) {
+            Tag t = em.find(Tag.class, s);
+            if (!t.getEventoCollection().contains(evento)) {
+                t.getEventoCollection().add(evento);
+            }
+            listTag.add(t);
+        }
+        
 
+        for (Tag t : evento.getTagCollection()) {
+            if (!listTag.contains(t)) {
+                t.getUsuarioCollection().remove(evento);
+                em.merge(t);
+            }
+        }
+
+        evento.setTagCollection(listTag);
+        
         super.edit(evento);
         
         if (v != eventoProxy.validado) {
